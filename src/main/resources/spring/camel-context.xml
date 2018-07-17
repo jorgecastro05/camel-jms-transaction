@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:ctx="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <ctx:annotation-config/>
+    <ctx:component-scan base-package="com.fuse"/>
+
+    <!--AMQ CONFIGURATION-->
+    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL"
+                  value="tcp://172.30.58.201:61616?jms.redeliveryPolicy.maximumRedeliveries=3&amp;jms.redeliveryPolicy.initialRedeliveryDelay=500"/>
+        <property name="userName" value="usercy3"/>
+        <property name="password" value="YR81KM7Q"/>
+    </bean>
+
+    <bean id="transactionManager"
+          class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
+    </bean>
+
+    <bean name="activemq" class="org.apache.camel.component.jms.JmsComponent">
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transacted" value="true"/>
+    </bean>
+
+    <bean id="paymentBean" class="com.fuse.PaymentBean"/>
+
+
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring" trace="true">
+
+        <endpoint id="endpointQueueIncomingPayments" uri="activemq:queue:incomingPayments"/>
+        <endpoint id="endpointQueueOutgoingPayments" uri="activemq:queue:outgoingPayments"/>
+        <endpoint id="endpointfileIn" uri="file:/data/jms1/in?noop=true"/>
+        <endpoint id="endpointfileOut" uri="file:/data/jms1/out"/>
+
+        <dataFormats>
+            <jaxb id="jaxb" contextPath="com.redhat.training.payment" prettyPrint="true"/>
+        </dataFormats>
+
+        <!-- 1. Seeds the queue with data. -->
+        <route>
+            <from ref="endpointfileIn"/>
+            <to ref="endpointQueueIncomingPayments"/>
+        </route>
+
+        <!-- 2. PaymentCurrencyRouter -->
+        <route>
+            <from ref="endpointQueueIncomingPayments"/>
+            <convertBodyTo type="String"/>
+            <unmarshal ref="jaxb"/>
+            <bean ref="paymentBean" method="validate"/>
+            <marshal ref="jaxb"/>
+            <to uri="endpointQueueOutgoingPayments"/>
+        </route>
+
+        <!-- 3. Consume messages from queues -->
+        <route>
+            <from ref="endpointQueueOutgoingPayments"/>
+            <to ref="endpointfileOut"/>
+        </route>
+
+    </camelContext>
+
+</beans>
