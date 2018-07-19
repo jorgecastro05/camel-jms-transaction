@@ -21,7 +21,7 @@ public class PaymentBean {
         LOG.info("Message looks good -> save it to the DB");
         for ( Payment payment : payments.getPayment()) {
             jdbcTemplate.update(
-                    "insert into Payments ( from, to, amount, currency ) values ('"
+                    "insert into Payments (from,to,amount,currency) values ('"
                             + payment.getFrom()
                             + "', '"
                             + payment.getTo()
@@ -29,7 +29,7 @@ public class PaymentBean {
                             + payment.getAmount()
                             + "', '"
                             + payments.getCurrency()
-                            + "');"
+                            + "')"
             );
         }
 
