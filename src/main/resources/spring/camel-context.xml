@@ -30,7 +30,28 @@
         <property name="transacted" value="true"/>
     </bean>
 
-    <bean id="paymentBean" class="com.fuse.PaymentBean"/>
+    <bean id="paymentBean" class="com.fuse.PaymentBean">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="POLICY_PROPAGATION_REQUIRED" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
+        <property name="transactionManager" ref="jdbcTransactionManager"/>
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
+    </bean>
+
+    <bean name="jdbcTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="dataSource" class="org.mariadb.jdbc.MariaDbDataSource">
+        <property name="user" value="user2YN"/>
+        <property name="password" value="WHhqWl2q2g6wIkBX"/>
+        <property name="url" value="jdbc:mariadb://172.30.20.49:3306/sampledb"/>
+    </bean>
+
+    <bean id="processedMessagesRepository" class="com.fuse.JdbcMessageIdRepository">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring" trace="true">
@@ -53,16 +74,22 @@
         <!-- 2. PaymentCurrencyRouter -->
         <route>
             <from ref="endpointQueueIncomingPayments"/>
-            <convertBodyTo type="String"/>
-            <unmarshal ref="jaxb"/>
-            <bean ref="paymentBean" method="validate"/>
-            <marshal ref="jaxb"/>
-            <to uri="endpointQueueOutgoingPayments"/>
+            <transacted ref="POLICY_PROPAGATION_REQUIRED"/>
+            <log message="Received Message ${body}"/>
+            <idempotentConsumer messageIdRepositoryRef="processedMessagesRepository">
+                <header>CamelFileNameOnly</header>
+                <unmarshal ref="jaxb"/>
+                <bean ref="paymentBean" method="insert"/>
+                <marshal ref="jaxb"/>
+                <log message="Save Message ${body}"/>
+                <to uri="endpointQueueOutgoingPayments"/>
+            </idempotentConsumer>
         </route>
 
         <!-- 3. Consume messages from queues -->
         <route>
             <from ref="endpointQueueOutgoingPayments"/>
+            <convertBodyTo type="java.lang.String"/>
             <to ref="endpointfileOut"/>
         </route>
 

@@ -17,7 +17,7 @@ public class RouteTest extends CamelSpringTestSupport {
     public void testRoute() throws Exception {
         MockEndpoint mockEndpoint = getMockEndpoint(getMockEndpoint());
         mockEndpoint.expectedMinimumMessageCount(1);
-        context.getRouteDefinition("routeAsync").adviceWith(context, new AdviceWithRouteBuilder() {
+        context.getRouteDefinition("endpointfileIn").adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
                 weaveAddLast().to(getMockEndpoint());
