@@ -105,26 +105,26 @@
         </route>
 
         <!--Routes for course topic 4. Set Up Route Policy-->
-        <route id="timer-managed-route" routePolicyRef="policy">
+        <route id="timer-managed-route">
             <from uri="timer:managed"/>
             <setBody>
-                <constant>Hello World</constant>
+                <simple>Hello World</simple>
             </setBody>
             <log message="Route 'direct:foo' is called"/>
             <to uri="direct:foo"/>
             <setBody>
-                <constant>STOP</constant>
+                <simple>STOP</simple>
             </setBody>
             <log message="Route 'direct:foo' will be stopped"/>
             <to uri="direct:foo"/>
             <setBody>
-                <constant>Hello World</constant>
+                <simple>Hello World</simple>
             </setBody>
             <log message="Exception will be thrown as the route/consumer has been stopped during the previous step !"/>
             <to uri="direct:foo"/>
         </route>
 
-        <route id="routeFoo">
+        <route id="routeFoo" routePolicyRef="policy">
             <from uri="direct:foo"/>
             <log message="Route direct:foo has been called with the Body : ${body}"/>
         </route>
