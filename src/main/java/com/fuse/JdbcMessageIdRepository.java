@@ -25,21 +25,21 @@ public class JdbcMessageIdRepository implements IdempotentRepository<String> {
             return false;
         }
 
-        jdbcTemplate.update("INSERT INTO \"ProcessedPayments\" ( \"paymentIdentifier\" ) VALUES (?)", new Object[]{pMessageId});
+        jdbcTemplate.update("INSERT INTO ProcessedPayments ( paymentIdentifier ) VALUES (?)", new Object[]{pMessageId});
 
         return true;
     }
 
     @Override
     public boolean contains(String key) {
-        int numMatches = jdbcTemplate.queryForObject("SELECT count(0) FROM \"ProcessedPayments\" where \"paymentIdentifier\" = ?", new Object[]{key}, int.class);
+        int numMatches = jdbcTemplate.queryForObject("SELECT count(0) FROM ProcessedPayments where paymentIdentifier = ?", new Object[]{key}, int.class);
 
         return numMatches > 0;
     }
 
     @Override
     public boolean remove(String pMessageId) {
-        jdbcTemplate.execute("DELETE FROM \"ProcessedPayments\" WHERE \"paymentIdentifier\" = '" + pMessageId + "'");
+        jdbcTemplate.execute("DELETE FROM ProcessedPayments WHERE paymentIdentifier = '" + pMessageId + "'");
 
         return true;
     }

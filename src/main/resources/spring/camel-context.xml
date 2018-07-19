@@ -54,7 +54,7 @@
     </bean>
 
 
-    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring" trace="true">
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
         <endpoint id="endpointQueueIncomingPayments" uri="activemq:queue:incomingPayments"/>
         <endpoint id="endpointQueueOutgoingPayments" uri="activemq:queue:outgoingPayments"/>
