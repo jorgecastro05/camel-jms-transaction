@@ -53,6 +53,8 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
+    <bean id="policy" class="com.fuse.MyCustomRoutePolicy"/>
+
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
@@ -64,6 +66,15 @@
         <dataFormats>
             <jaxb id="jaxb" contextPath="com.redhat.training.payment" prettyPrint="true"/>
         </dataFormats>
+
+        <onException>
+            <exception>org.apache.camel.component.direct.DirectConsumerNotAvailableException</exception>
+            <handled>
+                <simple>true</simple>
+            </handled>
+            <log message="Route 'direct:foo' is suspended so we will close too the consumer of the timer-managed-route !"/>
+            <to uri="controlbus:route?routeId=timer-managed-route&amp;action=stop"/>
+        </onException>
 
         <!-- 1. Seeds the queue with data. -->
         <route>
@@ -91,6 +102,31 @@
             <from ref="endpointQueueOutgoingPayments"/>
             <convertBodyTo type="java.lang.String"/>
             <to ref="endpointfileOut"/>
+        </route>
+
+        <!--Routes for course topic 4. Set Up Route Policy-->
+        <route id="timer-managed-route" routePolicyRef="policy">
+            <from uri="timer:managed"/>
+            <setBody>
+                <constant>Hello World</constant>
+            </setBody>
+            <log message="Route 'direct:foo' is called"/>
+            <to uri="direct:foo"/>
+            <setBody>
+                <constant>STOP</constant>
+            </setBody>
+            <log message="Route 'direct:foo' will be stopped"/>
+            <to uri="direct:foo"/>
+            <setBody>
+                <constant>Hello World</constant>
+            </setBody>
+            <log message="Exception will be thrown as the route/consumer has been stopped during the previous step !"/>
+            <to uri="direct:foo"/>
+        </route>
+
+        <route id="routeFoo">
+            <from uri="direct:foo"/>
+            <log message="Route direct:foo has been called with the Body : ${body}"/>
         </route>
 
     </camelContext>
