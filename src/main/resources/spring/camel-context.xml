@@ -53,7 +53,7 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="policy" class="com.fuse.MyCustomRoutePolicy"/>
+    <!--<bean id="policy" class="com.fuse.MyCustomRoutePolicy"/>-->
 
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
@@ -104,30 +104,30 @@
             <to ref="endpointfileOut"/>
         </route>
 
-        <!--Routes for course topic 4. Set Up Route Policy-->
-        <route id="timer-managed-route">
-            <from uri="timer:managed"/>
-            <setBody>
-                <simple>Hello World</simple>
-            </setBody>
-            <log message="Route 'direct:foo' is called"/>
-            <to uri="direct:foo"/>
-            <setBody>
-                <simple>STOP</simple>
-            </setBody>
-            <log message="Route 'direct:foo' will be stopped"/>
-            <to uri="direct:foo"/>
-            <setBody>
-                <simple>Hello World</simple>
-            </setBody>
-            <log message="Exception will be thrown as the route/consumer has been stopped during the previous step !"/>
-            <to uri="direct:foo"/>
-        </route>
+        <!--&lt;!&ndash;Routes for course topic 4. Set Up Route Policy&ndash;&gt;-->
+        <!--<route id="timer-managed-route">-->
+            <!--<from uri="timer:managed"/>-->
+            <!--<setBody>-->
+                <!--<simple>Hello World</simple>-->
+            <!--</setBody>-->
+            <!--<log message="Route 'direct:foo' is called"/>-->
+            <!--<to uri="direct:foo"/>-->
+            <!--<setBody>-->
+                <!--<simple>STOP</simple>-->
+            <!--</setBody>-->
+            <!--<log message="Route 'direct:foo' will be stopped"/>-->
+            <!--<to uri="direct:foo"/>-->
+            <!--<setBody>-->
+                <!--<simple>Hello World</simple>-->
+            <!--</setBody>-->
+            <!--<log message="Exception will be thrown as the route/consumer has been stopped during the previous step !"/>-->
+            <!--<to uri="direct:foo"/>-->
+        <!--</route>-->
 
-        <route id="routeFoo" routePolicyRef="policy">
-            <from uri="direct:foo"/>
-            <log message="Route direct:foo has been called with the Body : ${body}"/>
-        </route>
+        <!--<route id="routeFoo" routePolicyRef="policy">-->
+            <!--<from uri="direct:foo"/>-->
+            <!--<log message="Route direct:foo has been called with the Body : ${body}"/>-->
+        <!--</route>-->
 
     </camelContext>
 
